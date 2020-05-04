@@ -3,7 +3,7 @@ from sklearn import svm
 from . import io
 from . import util
 from . import lbp
-
+    
 def sample2features(sample):
     features = []
     
@@ -35,10 +35,13 @@ def setup(data_filename, image_folder):
             
     return (X, y)
 
-def svc(data_filename, image_folder):
-    clf = svm.SVC()
-    X, y = setup(data_filename, image_folder)
-    print(X[0])
-    print(y)
-    clf.fit(X, y)
-    return clf
+class SVC():
+    def __init__(self, data_filename, image_folder):
+        self.clf = svm.SVC()
+        X, y = setup(data_filename, image_folder)
+        self.clf.fit(X, y)
+
+    def predict_sample(self, sample):
+        self.clf.predict([
+            sample2features(sample)
+        ])
