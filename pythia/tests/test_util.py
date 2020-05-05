@@ -19,11 +19,18 @@ class TestUtil(unittest.TestCase):
             cls.json[0]["classifications"]
         )
         
-    def test_section(self):
+    def test_section_no_cell(self):
         self.assertEqual(
-            1,
-            1,
-            "incorrect section"
+            self.sections[0][1],
+            "No cell",
+            "Section 0 is incorrected classify"
+        )
+    
+    def test_section_lsil(self):
+        self.assertEqual(
+            self.sections[1][1],
+            "LSIL",
+            "Section 1 is incorrected classify"
         )
 
 if __name__ == '__main__':

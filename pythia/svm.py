@@ -44,4 +44,4 @@ class SVC():
     def predict_sample(self, sample):
         return self.clf.predict([
             sample2features(sample)
-        ])
+        ])[0]
