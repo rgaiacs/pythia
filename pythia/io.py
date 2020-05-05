@@ -1,6 +1,8 @@
 import json
 import os
 
+from joblib import dump, load
+
 from skimage.color import rgb2gray
 import skimage
 
@@ -10,7 +12,7 @@ def imread(filename):
     Parameters
     ----------
     filename : str
-        Name of the image file to load.
+        Name of the image file to read.
 
     Returns
     -------
@@ -81,3 +83,33 @@ def jsonread(filename):
     with open(filename, "r") as _file:
         data = json.load(_file)
     return data
+
+def clfread(filename):
+    """Read SVC classifier.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the SVC classifier file to read.
+
+    Returns
+    -------
+    image
+        Image as Numpy array.
+    """
+    return load(filename)
+
+def clfsave(filename, clf):
+    """Save SVC classifier to file.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the image file to write.
+    clf : SVC classifier
+        Scikit-learn SVC
+    """
+    dump(
+        clf,
+        filename
+    )
