@@ -2,6 +2,9 @@ from sklearn import svm
 
 from . import io
 from . import util
+
+from . import hog
+from . import glcm
 from . import lbp
     
 def sample2features(sample):
@@ -9,6 +12,12 @@ def sample2features(sample):
     
     # Local binary pattern
     features.extend(lbp.hist(sample))
+    
+    # Histogram of Oriented Gradients
+    features.extend(hog.hist(sample))
+    
+    # Gray-Level Co-Occurrence Matrix
+    features.extend(glcm.hist(sample))
     
     return features
 
