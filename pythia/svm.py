@@ -42,6 +42,6 @@ class SVC():
         self.clf.fit(X, y)
 
     def predict_sample(self, sample):
-        self.clf.predict([
+        return self.clf.predict([
             sample2features(sample)
         ])
