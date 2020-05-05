@@ -1,4 +1,5 @@
 import argparse
+import time
 
 from pythia import io
 from pythia import svm
@@ -57,6 +58,11 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers()
     
     parser.add_argument(
+        '--clock',
+        action='store_true',
+        help='Clock time of operation'
+    )
+    parser.add_argument(
         '--verbose',
         '-v',
         action='store_true',
@@ -107,6 +113,14 @@ if __name__ == '__main__':
     else:
         logger.setLevel(logging.WARNING)
         
-    print(logger.getEffectiveLevel())
+    if args.clock:
+        t0 = time.time()
     
     args.func(args)
+    
+    if args.clock:
+        print(
+            """{} seconds wall time""".format(
+                time.time() - t0
+            )
+        )
