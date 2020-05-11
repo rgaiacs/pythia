@@ -56,16 +56,16 @@ def test(args):
         image_folder
     )
 
-    for i in range(classifications.size):
-        prediction = clf.predict(
+    for i in range(len(classifications)):
+        predictions.append(clf.predict_sample(
             sections[i]
-        )
+        ))
 
 
     with open(predictions_filename, "w") as _file:
-        _file.write("manual,prediction")
-        for i in range(classifications.size):
-            _file.write("{},{}".format(
+        _file.write("manual,prediction\n")
+        for i in range(len(classifications)):
+            _file.write("{},{}\n".format(
                 classifications[i],
                 predictions[i]
             ))
@@ -85,7 +85,7 @@ def predict(args):
     )
     logger.info('Loading image complete!')
     logger.info('Predicting image ...')
-    prediction = clf.predict(
+    prediction = clf.predict_sample(
         image
     )
     logger.info('Predicting image complete')
