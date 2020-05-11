@@ -34,8 +34,11 @@ def imread2gray(filename):
     image
         Image as Numpy array.
     """
-    image = skimage.io.imread(filename)
-    return rgb2gray(image)
+    image = skimage.io.imread(
+        filename,
+        as_gray=True
+    )
+    return skimage.img_as_ubyte(image)
 
 def imsave(filename, image):
     """Save image to file.
