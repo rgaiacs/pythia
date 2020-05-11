@@ -1,8 +1,8 @@
-import numpy as np
-
+"""GLC"""
 from skimage.feature import greycomatrix
 
 def hist(image):
+    """Create histogram"""
     glcm_image = greycomatrix(
         image,
         [1],  # distances

@@ -1,8 +1,10 @@
+"""LBP"""
 import numpy as np
 
 from skimage.feature import local_binary_pattern
 
 def hist(image):
+    """Calculate LBP histogram"""
     lbp_image = local_binary_pattern(
         image,
         8,  # n_points

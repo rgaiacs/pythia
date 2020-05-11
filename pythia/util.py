@@ -1,9 +1,35 @@
+"""Utils"""
+import json
 import logging
+
+from sklearn.model_selection import KFold
+
+from . import io
+
+from . import hog
+from . import glcm
+from . import lbp
+
 logging.basicConfig(
-    level=logging.WARNING,
+    level=logging.NOTSET,
     format='%(message)s'
 )
-logger = logging.getLogger('pythia.util')
+LOGGER = logging.getLogger('pythia.util')
+
+def sample2features(sample):
+    """Generate features for image"""
+    features = []
+    
+    # Local binary pattern
+    features.extend(lbp.hist(sample))
+    
+    # Histogram of Oriented Gradients
+    features.extend(hog.hist(sample))
+    
+    # Gray-Level Co-Occurrence Matrix
+    features.extend(glcm.hist(sample))
+    
+    return features
 
 def image2sections(image, section_size=100):
     """Create sections of the image.
@@ -75,18 +101,20 @@ def image2sections_and_classes(image, classes, section_size=100):
             classification = "No cell"
             
             section = image[
-                    i_floor:i_ceil,
-                    j_floor:j_ceil
+                i_floor:i_ceil,
+                j_floor:j_ceil
             ]
             
-            for c in classes:
-                if c["nucleus_x"] > i_floor and c["nucleus_x"] < i_ceil and c["nucleus_y"] > j_floor and c["nucleus_y"] < j_ceil:
-                    logger.debug(
-                        """Cell {}""".format(
-                            c
-                        )
+            for cell in classes:
+                if (cell["nucleus_x"] > i_floor and
+                        cell["nucleus_x"] < i_ceil and
+                        cell["nucleus_y"] > j_floor and
+                        cell["nucleus_y"] < j_ceil):
+                    LOGGER.debug(
+                        "Cell %s",
+                        cell
                     )
-                    classification = c["bethesda_system"]
+                    classification = cell["bethesda_system"]
                     break
             
             sections.append(
@@ -96,21 +124,117 @@ def image2sections_and_classes(image, classes, section_size=100):
                 )
             )
             
-            logger.debug(
-                """Section is {}\n"""
-                """\ti_floor: {}\n"""
-                """\ti_ceil: {}\n"""
-                """\tj_floor: {}\n"""
-                """\tj_ceil: {}""".format(
-                    classification,
-                    i_floor,
-                    i_ceil,
-                    j_floor,
-                    j_ceil
-                )
+            LOGGER.debug(
+                """Section is %s\n"""
+                """\ti_floor: %s\n"""
+                """\ti_ceil: %s\n"""
+                """\tj_floor: %s\n"""
+                """\tj_ceil: %s""",
+                classification,
+                i_floor,
+                i_ceil,
+                j_floor,
+                j_ceil
             )
             j = j + 1
         j = 0
         i = i + 1
         
     return sections
+
+def collection2sections_and_classes(
+        data_filename,
+        image_folder,
+        section_size=100):
+    """Generate sections and classes for collection"""
+    points = []
+    classifications = []
+    
+    data = io.jsonread(
+        data_filename
+    )
+    
+    for datum in data:
+        image = io.imread2gray(
+            "{}/{}".format(
+                image_folder,
+                datum["image_name"]
+            )
+        )
+        for section, classification in image2sections_and_classes(
+                image,
+                datum["classifications"],
+                section_size):
+            points.append(
+                sample2features(section)
+            )
+            classifications.append(classification)
+            
+    return (points, classifications)
+
+def kfold(
+        data_filename,
+        n_splits=10,
+        shuffle=False,
+        random_state=None):
+    """Provides train/test indices to split data in train/test sets."""
+    images = io.jsonread(
+        data_filename
+    )
+    kf = KFold(
+        n_splits=n_splits,
+        shuffle=shuffle,
+        random_state=random_state
+    )
+
+    set_counter = 0
+    for train_index, test_index in kf.split(images):
+        set_counter = set_counter + 1
+        LOGGER.info(
+            'Processing train and test set %s ...',
+            set_counter
+        )
+
+        train_filename = "train-{}.json".format(set_counter)
+        test_filename = "test-{}.json".format(set_counter)
+
+        train = []
+        test = []
+
+        for i in train_index:
+            train.append(images[i])
+        for i in test_index:
+            test.append(images[i])
+
+        with open(train_filename, "w") as train_file:
+            LOGGER.info(
+                'Writing %s ...',
+                train_filename
+            )
+            json.dump(
+                train,
+                train_file
+            )
+            LOGGER.info(
+                'Fineshed with %s!',
+                train_filename
+            )
+
+        with open(test_filename, "w") as test_file:
+            LOGGER.info(
+                'Writing %s ...',
+                test_filename
+            )
+            json.dump(
+                test,
+                test_file
+            )
+            LOGGER.info(
+                'Fineshed with %s!',
+                test_filename
+            )
+
+        LOGGER.info(
+            'Fineshed with train and test set %s!',
+            set_counter
+        )

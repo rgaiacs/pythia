@@ -1,8 +1,10 @@
+"""Hog"""
 import numpy as np
 
 from skimage.feature import hog
 
 def hist(image):
+    """Calculate HOG histogram"""
     hog_image = hog(
         image,
         feature_vector=True

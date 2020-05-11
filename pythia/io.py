@@ -1,5 +1,5 @@
+"""IO module"""
 import json
-import os
 
 from joblib import dump, load
 
