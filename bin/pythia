@@ -75,7 +75,7 @@ def crop(args):
     image_filename = os.path.basename(args.image)
     image_abspath = os.path.abspath(args.image)
     output_folder = args.output_folder
-    section_size=100
+    section_size = int(args.size)
     i = 0
     j = 0
     k = 1
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     )
     parser_kfold.add_argument(
         '--random-seed',
-        default="1",
+        default=1,
         help='int used as the seed used by the random number generator'
     )
     parser_kfold.set_defaults(
@@ -221,6 +221,11 @@ if __name__ == '__main__':
         '--image',
         default="sample.png",
         help='Input image file to be crop'
+    )
+    parser_crop.add_argument(
+        '--size',
+        default=100,
+        help='Size for width x height of each cropped section'
     )
     parser_crop.add_argument(
         '--output-folder',
