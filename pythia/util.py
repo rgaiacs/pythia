@@ -11,10 +11,10 @@ from . import glcm
 from . import lbp
 
 logging.basicConfig(
-    level=logging.NOTSET,
+    level=logging.INFO,
     format='%(message)s'
 )
-LOGGER = logging.getLogger('pythia.util')
+LOGGER = logging.getLogger(__name__)
 
 def sample2features(sample):
     """Generate features for image"""
@@ -147,7 +147,7 @@ def collection2sections_and_classes(
         image_folder,
         section_size=100):
     """Generate sections and classes for collection"""
-    points = []
+    sections = []
     classifications = []
     
     data = io.jsonread(
@@ -165,12 +165,29 @@ def collection2sections_and_classes(
                 image,
                 datum["classifications"],
                 section_size):
-            points.append(
-                sample2features(section)
-            )
+            sections.append(section)
             classifications.append(classification)
             
-    return (points, classifications)
+    return (sections, classifications)
+
+def collection2features_and_classes(
+        data_filename,
+        image_folder,
+        section_size=100):
+    """Generate features and classes for collection"""
+    features = []
+    sections, classifications = collection2sections_and_classes(
+        data_filename,
+        image_folder,
+        section_size=section_size
+    )
+
+    for section in sections:
+        features.append(
+            sample2features(section)
+        )
+    
+    return (features, classifications)
 
 def kfold(
         data_filename,

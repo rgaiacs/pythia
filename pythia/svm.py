@@ -7,7 +7,7 @@ class SVC():
     """Support Vector Classification"""
     def __init__(self, data_filename, image_folder):
         self.clf = svm.SVC()
-        points, classification = util.collection2sections_and_classes(
+        points, classification = util.collection2features_and_classes(
             data_filename,
             image_folder
         )
