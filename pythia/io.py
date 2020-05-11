@@ -3,7 +3,6 @@ import json
 
 from joblib import dump, load
 
-from skimage.color import rgb2gray
 import skimage
 
 def imread(filename):
