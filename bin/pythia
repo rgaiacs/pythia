@@ -15,7 +15,7 @@ logger = logging.getLogger('pythia')
 
 def kfold(args):
     data_filename = args.data
-    random_state = args.random_seed
+    random_state = int(args.random_seed)
 
     util.kfold(
         data_filename,
