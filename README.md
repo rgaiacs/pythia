@@ -13,5 +13,17 @@ $ python -m pip install -e .
 Run
 
 ```
-$ python -m unittest discover
+$ python -m unittest
+```
+
+## Use (from Command Line)
+
+```
+$ pythia --help
+```
+
+## Use (as Library)
+
+```
+import pythia
 ```
