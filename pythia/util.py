@@ -92,11 +92,11 @@ def image2sections_and_classes(image, classes, section_size=100):
     # | 7 | 8 | 9 |
     # +---+---+---+
     while (i + 1) * section_size < image.shape[0]:
-        i_floor = i * 100
-        i_ceil = (i + 1) * 100
+        i_floor = i * section_size
+        i_ceil = (i + 1) * section_size
         while (j + 1) * section_size < image.shape[1]:
-            j_floor = j * 100
-            j_ceil = (j + 1) * 100
+            j_floor = j * section_size
+            j_ceil = (j + 1) * section_size
             
             classification = "No cell"
             
