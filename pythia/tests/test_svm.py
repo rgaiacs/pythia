@@ -20,35 +20,35 @@ class TestUtil(unittest.TestCase):
     def test_prediction_no_cell(self):
         self.assertEqual(
             self.svc.predict_sample(self.image[0:100, 0:100]),
-            "No cell",
+            "normal cell",
             "incorrect prediction for cell"
         )
     
     def test_prediction_lsil(self):
         self.assertEqual(
             self.svc.predict_sample(self.image[0:100, 100:200]),
-            "LSIL",
+            "altered cell",
             "incorrect prediction for LSIL"
         )
         
     def test_prediction_hsil(self):
         self.assertEqual(
             self.svc.predict_sample(self.image[300:400, 100:200]),
-            "HSIL",
+            "altered cell",
             "incorrect prediction for HSIL"
         )
         
     def test_prediction_asch(self):
         self.assertEqual(
             self.svc.predict_sample(self.image[0:100, 300:400]),
-            "ASC-H",
+            "altered cell",
             "incorrect prediction for ASC-H"
         )
         
     def test_prediction_scc(self):
         self.assertEqual(
             self.svc.predict_sample(self.image[300:400, 400:500]),
-            "SCC",
+            "altered cell",
             "incorrect prediction for SCC"
         )
 

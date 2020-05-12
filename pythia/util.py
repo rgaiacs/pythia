@@ -98,7 +98,7 @@ def image2sections_and_classes(image, classes, section_size=100):
             j_floor = j * section_size
             j_ceil = (j + 1) * section_size
             
-            classification = "No cell"
+            classification = "normal cell"
             
             section = image[
                 i_floor:i_ceil,
@@ -114,7 +114,11 @@ def image2sections_and_classes(image, classes, section_size=100):
                         "Cell %s",
                         cell
                     )
-                    classification = cell["bethesda_system"]
+                    
+                    if cell["bethesda_system"] == "Negative for intraepithelial lesion":
+                        classification = "normal cell"
+                    else:
+                        classification = "altered cell"
                     break
             
             sections.append(
