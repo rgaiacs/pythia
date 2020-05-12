@@ -106,49 +106,62 @@ if __name__ == '__main__':
             "prediction": predictions
         })
         
-        true_positive = 0
+        neptune.log_metric(
+            'Number of cells',
+            df.shape[0]
+        )
+
+        true_positive = df[
+            (df["manual"] == "altered cell") & (df["prediction"] == "altered cell")
+        ].shape[0]
         neptune.log_metric(
             'True Positive',
             true_positive
         )
         
-        true_negative = 0
+        true_negative = df[
+            (df["manual"] == "normal cell") & (df["prediction"] == "normal cell")
+        ].shape[0]
         neptune.log_metric(
             'True Negative',
             true_negative
         )
 
-        false_positive = 0
+        false_positive = df[
+            (df["manual"] == "normal cell") & (df["prediction"] == "altered cell")
+        ].shape[0]
         neptune.log_metric(
             'False Positive',
             false_positive
         )
         
-        false_negative = 0
+        false_negative = df[
+            (df["manual"] == "altered cell") & (df["prediction"] == "normal cell")
+        ].shape[0]
         neptune.log_metric(
             'False Negative',
             false_negative
         )
 
-        precision = 0
+        precision = (true_positive + true_negative) / (true_positive + true_negative + false_positive + false_negative)
         neptune.log_metric(
             'Precision',
             precision
         )
 
-        sensibility = 0
+        sensitivity = (true_positive) / (true_positive + false_negative)
         neptune.log_metric(
             'Precision',
-            sensibility
+            sensitivity
         )
 
-        specificity = 0
+        specificity = (true_negative) / (true_negative + false_positive)
         neptune.log_metric(
             'Precision',
             specificity
         )
 
-        f1_score = 0
+        f1_score = 2 * (precision * sensitivity) / (precision + sensitivity)
         neptune.log_metric(
             'Precision',
             f1_score
