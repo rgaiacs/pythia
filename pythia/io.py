@@ -3,7 +3,7 @@ import json
 
 from joblib import dump, load
 
-import skimage
+import skimage.io
 
 def imread(filename):
     """Read image file to memory.
