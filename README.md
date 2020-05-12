@@ -1,5 +1,7 @@
 # Pythia
 
+![Travis CI Badge](https://travis-ci.com/rgaiacs/pythia.svg?branch=master)
+
 ## Install
 
 ### For developers
