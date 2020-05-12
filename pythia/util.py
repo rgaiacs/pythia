@@ -46,23 +46,19 @@ def image2sections(image, section_size=100):
     sections
         List with sections of the image
     """
-    sections = []
     i = 0
     j = 0
     
     while (j + 1) * section_size < image.shape[0]:
         while (i + 1) * section_size < image.shape[1]:
-            sections.append(
-                image[
-                    j * 100:(j + 1) * 100,
-                    i * 100:(i + 1) * 100
-                ]
-            )
+            yield image[
+                j * 100:(j + 1) * 100,
+                i * 100:(i + 1) * 100
+            ]
+
             i = i + 1
         i = 0
         j = j + 1
-        
-    return sections
 
 def image2sections_and_classes(image, classes, section_size=100):
     """Create sections of the image.
@@ -79,7 +75,6 @@ def image2sections_and_classes(image, classes, section_size=100):
     sections
         List with sections of the image
     """
-    sections = []
     i = 0
     j = 0
     
@@ -114,19 +109,12 @@ def image2sections_and_classes(image, classes, section_size=100):
                         "Cell %s",
                         cell
                     )
-                    
+
                     if cell["bethesda_system"] == "Negative for intraepithelial lesion":
                         classification = "normal cell"
                     else:
                         classification = "altered cell"
                     break
-            
-            sections.append(
-                (
-                    section,
-                    classification
-                )
-            )
             
             LOGGER.debug(
                 """Section is %s\n"""
@@ -140,11 +128,15 @@ def image2sections_and_classes(image, classes, section_size=100):
                 j_floor,
                 j_ceil
             )
+
+            yield (
+                section,
+                classification
+            )
+            
             j = j + 1
         j = 0
         i = i + 1
-        
-    return sections
 
 def collection2sections_and_classes(
         data_filename,

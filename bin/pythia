@@ -101,7 +101,7 @@ def crop(args):
                 os.path.join(
                     output_folder,
                     filename
-                )
+                ),
                 image[
                     i_floor:i_ceil,
                     j_floor:j_ceil
