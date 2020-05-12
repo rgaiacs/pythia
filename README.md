@@ -8,6 +8,12 @@
 $ python -m pip install -e .
 ```
 
+### For users
+
+```
+$ python -m pip install .
+```
+
 ## Test
 
 Run
@@ -26,4 +32,10 @@ $ pythia --help
 
 ```
 import pythia
+```
+
+## Benchmark (with Neptune)
+
+```
+$ pythia2neptune --help
 ```

@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+import argparse
+import io
+import logging
+import os.path
+import time
+
+from pythia import svm
+from pythia import util
+
+import pandas
+import neptune
+
+logging.basicConfig(
+    level=logging.NOTSET,
+    format='%(message)s'
+)
+logger = logging.getLogger(__name__)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='CRIC SVM to Neptune.'
+    )
+    parser.add_argument(
+        '--verbose',
+        '-v',
+        action='store_true',
+        help='Enable verbose mode'
+    )
+    parser.add_argument(
+        '--user',
+        default="CRICDatabase",
+        help='User name in Neptune'
+    )
+    parser.add_argument(
+        '--project',
+        default="pythia",
+        help='Project name in Neptune'
+    )
+    parser.add_argument(
+        '--experiment',
+        default="example",
+        help='Experiment name in Neptune'
+    )
+    parser.add_argument(
+        '--image-folder',
+        default="img",
+        help='Image folder'
+    )
+
+    args = parser.parse_args()
+
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARNING)
+
+    neptune.init(
+        "{}/{}".format(
+            args.user,
+            args.project
+        )
+    )
+
+    neptune.create_experiment(
+        name=args.experiment
+    )
+
+    TRAIN_TEST_FILENAMES = [
+        (
+            "train.json",
+            "test.json",
+        )
+    ]
+
+    for train_filename, test_filename in TRAIN_TEST_FILENAMES:
+        logger.info('Fitting {} ...'.format(train_filename))
+        t0 = time.time()
+        svc = svm.SVC(
+            train_filename,
+            args.image_folder
+        )
+        operation_time = time.time() - t0
+        neptune.log_metric('Training time', operation_time)
+        logger.info('Fitting {} complete!'.format(train_filename))
+
+        sections, classifications = util.collection2sections_and_classes(
+            test_filename,
+            args.image_folder
+        )
+
+        predictions = []
+        operation_time = 0
+        for i in range(len(classifications)):
+            t0 = time.time()
+            predictions.append(svc.predict_sample(
+                sections[i]
+            ))
+            operation_time = operation_time + time.time() - t0
+        operation_time = operation_time / len(classifications)
+        neptune.log_metric('(Average) Prediction time', operation_time)
+
+
+        df = pandas.DataFrame({
+            "manual": classifications,
+            "prediction": predictions
+        })
+        
+        true_positive = 0
+        neptune.log_metric(
+            'True Positive',
+            true_positive
+        )
+        
+        true_negative = 0
+        neptune.log_metric(
+            'True Negative',
+            true_negative
+        )
+
+        false_positive = 0
+        neptune.log_metric(
+            'False Positive',
+            false_positive
+        )
+        
+        false_negative = 0
+        neptune.log_metric(
+            'False Negative',
+            false_negative
+        )
+
+        precision = 0
+        neptune.log_metric(
+            'Precision',
+            precision
+        )
+
+        sensibility = 0
+        neptune.log_metric(
+            'Precision',
+            sensibility
+        )
+
+        specificity = 0
+        neptune.log_metric(
+            'Precision',
+            specificity
+        )
+
+        f1_score = 0
+        neptune.log_metric(
+            'Precision',
+            f1_score
+        )
+
+        neptune.log_artifact(
+            io.StringIO(df.to_csv()),
+            "prediction_log"
+        )
+
+    neptune.stop()
