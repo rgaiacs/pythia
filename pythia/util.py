@@ -22,10 +22,10 @@ def sample2features(sample):
     
     # Local binary pattern
     features.extend(lbp.hist(sample))
-    
+
     # Histogram of Oriented Gradients
     features.extend(hog.hist(sample))
-    
+
     # Gray-Level Co-Occurrence Matrix
     features.extend(glcm.hist(sample))
     
@@ -151,18 +151,30 @@ def collection2sections_and_classes(
     )
     
     for datum in data:
+        LOGGER.info(
+            'Processing image #%s ...\n\tFile name: %s',
+            datum["image_id"],
+            datum["image_name"]
+        )
+
         image = io.imread2gray(
             "{}/{}".format(
                 image_folder,
                 datum["image_name"]
             )
         )
+
         for section, classification in image2sections_and_classes(
                 image,
                 datum["classifications"],
                 section_size=section_size):
             sections.append(section)
             classifications.append(classification)
+
+        LOGGER.info(
+            'Finished with image #%s!',
+            datum["image_id"]
+        )
             
     return (sections, classifications)
 
