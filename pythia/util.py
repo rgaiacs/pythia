@@ -160,7 +160,7 @@ def collection2sections_and_classes(
         for section, classification in image2sections_and_classes(
                 image,
                 datum["classifications"],
-                section_size):
+                section_size=section_size):
             sections.append(section)
             classifications.append(classification)
             
@@ -172,17 +172,40 @@ def collection2features_and_classes(
         section_size=100):
     """Generate features and classes for collection"""
     features = []
-    sections, classifications = collection2sections_and_classes(
-        data_filename,
-        image_folder,
-        section_size=section_size
-    )
+    classifications = []
 
-    for section in sections:
-        features.append(
-            sample2features(section)
-        )
+    data = io.jsonread(
+        data_filename
+    )
     
+    for datum in data:
+        LOGGER.info(
+            'Processing image #%s ...\n\tFile name: %s',
+            datum["image_id"],
+            datum["image_name"]
+        )
+        
+        image = io.imread2gray(
+            "{}/{}".format(
+                image_folder,
+                datum["image_name"]
+            )
+        )
+        
+        for section, classification in image2sections_and_classes(
+                image,
+                datum["classifications"],
+                section_size=section_size):
+            features.append(
+                sample2features(section)
+            )
+            classifications.append(classification)
+        
+        LOGGER.info(
+            'Finished with image #%s!',
+            datum["image_id"]
+        )
+            
     return (features, classifications)
 
 def kfold(
