@@ -84,22 +84,30 @@ if __name__ == '__main__':
         neptune.log_metric('Training time', operation_time)
         logger.info('Fitting {} complete!'.format(train_filename))
 
-        sections, classifications = util.collection2sections_and_classes(
-            test_filename,
-            args.image_folder
-        )
+
+        logger.info('Predict {} ...'.format(test_filename))
 
         predictions = []
+        classifications = []
+        i = 0
         operation_time = 0
-        for i in range(len(classifications)):
+        for section, classification in util.collection2sections_and_classes(
+                test_filename,
+                args.image_folder):
+
             t0 = time.time()
             predictions.append(svc.predict_sample(
-                sections[i]
+                section
             ))
             operation_time = operation_time + time.time() - t0
-        operation_time = operation_time / len(classifications)
+
+            i = i + 1
+            classifications.append(classification)
+
+        operation_time = operation_time / i
         neptune.log_metric('(Average) Prediction time', operation_time)
 
+        logger.info('Predict {} complete!'.format(test_filename))
 
         df = pandas.DataFrame({
             "manual": classifications,

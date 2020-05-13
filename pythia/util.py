@@ -168,8 +168,10 @@ def collection2sections_and_classes(
                 image,
                 datum["classifications"],
                 section_size=section_size):
-            sections.append(section)
-            classifications.append(classification)
+            yield (
+                section,
+                classification
+            )
 
         LOGGER.info(
             'Finished with image #%s!',
