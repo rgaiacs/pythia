@@ -123,7 +123,7 @@ def predict(args):
     )
     logger.info('Loading classifier complete!')
     logger.info('Loading image ...')
-    image = io.imread(
+    image = io.imread2gray(
         image_filename
     )
     logger.info('Loading image complete!')
