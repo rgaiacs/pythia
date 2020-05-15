@@ -75,10 +75,7 @@ def image2sections_and_classes(image, classes, section_size=100):
     sections
         List with sections of the image
     """
-    i = 0
-    j = 0
-    
-    # How the image is segmented.
+    # How the image is sliced into sections.
     # +---+---+---+
     # | 1 | 2 | 3 |
     # +---+---+---+
@@ -86,6 +83,8 @@ def image2sections_and_classes(image, classes, section_size=100):
     # +---+---+---+
     # | 7 | 8 | 9 |
     # +---+---+---+
+    i = 0
+    j = 0
     while (i + 1) * section_size < image.shape[0]:
         i_floor = i * section_size
         i_ceil = (i + 1) * section_size
@@ -137,6 +136,37 @@ def image2sections_and_classes(image, classes, section_size=100):
             j = j + 1
         j = 0
         i = i + 1
+
+    # Sections around classified cells
+    half_section_size = section_size / 2
+    for cell in classes:
+        if cell["bethesda_system"] == "Negative for intraepithelial lesion":
+            classification = "normal cell"
+        else:
+            classification = "altered cell"
+        
+        LOGGER.debug(
+            """Section around classification is %s\n"""
+            """\ti_floor: %s\n"""
+            """\ti_ceil: %s\n"""
+            """\tj_floor: %s\n"""
+            """\tj_ceil: %s""",
+            classification,
+            cell["nucleus_x"] - half_section_size,
+            cell["nucleus_x"] + half_section_size,
+            cell["nucleus_y"] - half_section_size,
+            cell["nucleus_y"] + half_section_size
+        )
+
+        section = image[
+            cell["nucleus_x"] - half_section_size:cell["nucleus_x"] + half_section_size,
+            cell["nucleus_y"] - half_section_size:cell["nucleus_y"] + half_section_size
+        ]
+
+        yield (
+            section,
+            classification
+        )
 
 def collection2sections_and_classes(
         data_filename,
