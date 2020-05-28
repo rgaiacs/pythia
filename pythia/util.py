@@ -9,6 +9,7 @@ from . import io
 from . import hog
 from . import glcm
 from . import lbp
+from . import hu
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,6 +29,8 @@ def sample2features(sample):
 
     # Gray-Level Co-Occurrence Matrix
     features.extend(glcm.hist(sample))
+
+    features.extend(hu.hist(sample))
     
     return features
 
@@ -138,12 +141,31 @@ def image2sections_and_classes(image, classes, section_size=100):
         i = i + 1
 
     # Sections around classified cells
-    half_section_size = section_size / 2
+    half_section_size = int(section_size / 2)
     for cell in classes:
         if cell["bethesda_system"] == "Negative for intraepithelial lesion":
             classification = "normal cell"
         else:
             classification = "altered cell"
+
+        if cell["nucleus_x"] < half_section_size:
+            section_x_start = 0
+            section_x_end = section_size
+        elif image.shape[0] - cell["nucleus_x"] < half_section_size:
+            section_x_start = image.shape[0] - section_size
+            section_x_end = image.shape[0]
+        else:
+            section_x_start = cell["nucleus_x"] - half_section_size
+            section_x_end = cell["nucleus_x"] + half_section_size
+        if cell["nucleus_y"] < half_section_size:
+            section_y_start = 0
+            section_y_end = section_size
+        elif image.shape[1] - cell["nucleus_y"] < half_section_size:
+            section_y_start = image.shape[1] - section_size
+            section_y_end = image.shape[1]
+        else:
+            section_y_start = cell["nucleus_y"] - half_section_size
+            section_y_end = cell["nucleus_y"] + half_section_size
         
         LOGGER.debug(
             """Section around classification is %s\n"""
@@ -152,15 +174,15 @@ def image2sections_and_classes(image, classes, section_size=100):
             """\tj_floor: %s\n"""
             """\tj_ceil: %s""",
             classification,
-            cell["nucleus_x"] - half_section_size,
-            cell["nucleus_x"] + half_section_size,
-            cell["nucleus_y"] - half_section_size,
-            cell["nucleus_y"] + half_section_size
+            section_x_start,
+            section_x_end,
+            section_y_start,
+            section_y_end
         )
 
         section = image[
-            cell["nucleus_x"] - half_section_size:cell["nucleus_x"] + half_section_size,
-            cell["nucleus_y"] - half_section_size:cell["nucleus_y"] + half_section_size
+            section_x_start:section_x_end,
+            section_y_start:section_y_end
         ]
 
         yield (

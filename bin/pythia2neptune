@@ -2,14 +2,13 @@
 import argparse
 import io
 import logging
-import os.path
 import time
-
-from pythia import svm
-from pythia import util
 
 import pandas
 import neptune
+
+from pythia import svm
+from pythia import util
 
 logging.basicConfig(
     level=logging.NOTSET,
@@ -47,6 +46,12 @@ if __name__ == '__main__':
         default="img",
         help='Image folder'
     )
+    parser.add_argument(
+        '--section-size',
+        type=int,
+        default=100,
+        help='Image section size'
+    )
 
     args = parser.parse_args()
 
@@ -78,7 +83,8 @@ if __name__ == '__main__':
         t0 = time.time()
         svc = svm.SVC(
             train_filename,
-            args.image_folder
+            args.image_folder,
+            args.section_size
         )
         operation_time = time.time() - t0
         neptune.log_metric('Training time', operation_time)
@@ -93,7 +99,8 @@ if __name__ == '__main__':
         operation_time = 0
         for section, classification in util.collection2sections_and_classes(
                 test_filename,
-                args.image_folder):
+                args.image_folder,
+                args.section_size):
 
             t0 = time.time()
             predictions.append(svc.predict_sample(
