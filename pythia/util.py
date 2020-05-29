@@ -52,11 +52,19 @@ def image2sections(image, section_size=100):
     i = 0
     j = 0
     
+    # How the image is sliced into sections.
+    # +---+---+---+
+    # | 1 | 2 | 3 |
+    # +---+---+---+
+    # | 4 | 5 | 6 |
+    # +---+---+---+
+    # | 7 | 8 | 9 |
+    # +---+---+---+
     while (j + 1) * section_size < image.shape[0]:
         while (i + 1) * section_size < image.shape[1]:
             yield image[
-                j * 100:(j + 1) * 100,
-                i * 100:(i + 1) * 100
+                j * section_size:(j + 1) * section_size,
+                i * section_size:(i + 1) * section_size
             ]
 
             i = i + 1
