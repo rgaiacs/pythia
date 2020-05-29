@@ -5,12 +5,20 @@ from . import util
 
 class SVC():
     """Support Vector Classification"""
-    def __init__(self, data_filename, image_folder, section_size=100):
+    def __init__(
+        self,
+        data_filename,
+        image_folder,
+        section_size=100,
+        crop_grid=True,
+        crop_center=True):
         self.clf = svm.SVC()
         points, classification = util.collection2features_and_classes(
             data_filename,
             image_folder,
-            section_size=section_size
+            section_size=section_size,
+            crop_grid=True,
+            crop_center=True
         )
         self.clf.fit(points, classification)
 

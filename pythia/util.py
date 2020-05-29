@@ -71,7 +71,12 @@ def image2sections(image, section_size=100):
         i = 0
         j = j + 1
 
-def image2sections_and_classes(image, classes, section_size=100):
+def image2sections_and_classes(
+        image,
+        classes,
+        section_size=100,
+        crop_grid=True,
+        crop_center=True):
     """Create sections of the image.
 
     Parameters
@@ -86,122 +91,126 @@ def image2sections_and_classes(image, classes, section_size=100):
     sections
         List with sections of the image
     """
-    # How the image is sliced into sections.
-    # +---+---+---+
-    # | 1 | 2 | 3 |
-    # +---+---+---+
-    # | 4 | 5 | 6 |
-    # +---+---+---+
-    # | 7 | 8 | 9 |
-    # +---+---+---+
-    i = 0
-    j = 0
-    while (i + 1) * section_size < image.shape[0]:
-        i_floor = i * section_size
-        i_ceil = (i + 1) * section_size
-        while (j + 1) * section_size < image.shape[1]:
-            j_floor = j * section_size
-            j_ceil = (j + 1) * section_size
-            
-            classification = "normal cell"
-            
-            section = image[
-                i_floor:i_ceil,
-                j_floor:j_ceil
-            ]
-            
-            for cell in classes:
-                if (cell["nucleus_x"] > i_floor and
-                        cell["nucleus_x"] < i_ceil and
-                        cell["nucleus_y"] > j_floor and
-                        cell["nucleus_y"] < j_ceil):
-                    LOGGER.debug(
-                        "Cell %s",
-                        cell
-                    )
+    if crop_grid:
+        # How the image is sliced into sections.
+        # +---+---+---+
+        # | 1 | 2 | 3 |
+        # +---+---+---+
+        # | 4 | 5 | 6 |
+        # +---+---+---+
+        # | 7 | 8 | 9 |
+        # +---+---+---+
+        i = 0
+        j = 0
+        while (i + 1) * section_size < image.shape[0]:
+            i_floor = i * section_size
+            i_ceil = (i + 1) * section_size
+            while (j + 1) * section_size < image.shape[1]:
+                j_floor = j * section_size
+                j_ceil = (j + 1) * section_size
+                
+                classification = "normal cell"
+                
+                section = image[
+                    i_floor:i_ceil,
+                    j_floor:j_ceil
+                ]
+                
+                for cell in classes:
+                    if (cell["nucleus_x"] > i_floor and
+                            cell["nucleus_x"] < i_ceil and
+                            cell["nucleus_y"] > j_floor and
+                            cell["nucleus_y"] < j_ceil):
+                        LOGGER.debug(
+                            "Cell %s",
+                            cell
+                        )
 
-                    if cell["bethesda_system"] == "Negative for intraepithelial lesion":
-                        classification = "normal cell"
-                    else:
-                        classification = "altered cell"
-                    break
+                        if cell["bethesda_system"] == "Negative for intraepithelial lesion":
+                            classification = "normal cell"
+                        else:
+                            classification = "altered cell"
+                        break
+                
+                LOGGER.debug(
+                    """Section is %s\n"""
+                    """\ti_floor: %s\n"""
+                    """\ti_ceil: %s\n"""
+                    """\tj_floor: %s\n"""
+                    """\tj_ceil: %s""",
+                    classification,
+                    i_floor,
+                    i_ceil,
+                    j_floor,
+                    j_ceil
+                )
+
+                yield (
+                    section,
+                    classification
+                )
+                
+                j = j + 1
+            j = 0
+            i = i + 1
+
+    if crop_center:
+        # Sections around classified cells
+        half_section_size = int(section_size / 2)
+        for cell in classes:
+            if cell["bethesda_system"] == "Negative for intraepithelial lesion":
+                classification = "normal cell"
+            else:
+                classification = "altered cell"
+
+            if cell["nucleus_x"] < half_section_size:
+                section_x_start = 0
+                section_x_end = section_size
+            elif image.shape[0] - cell["nucleus_x"] < half_section_size:
+                section_x_start = image.shape[0] - section_size
+                section_x_end = image.shape[0]
+            else:
+                section_x_start = cell["nucleus_x"] - half_section_size
+                section_x_end = cell["nucleus_x"] + half_section_size
+            if cell["nucleus_y"] < half_section_size:
+                section_y_start = 0
+                section_y_end = section_size
+            elif image.shape[1] - cell["nucleus_y"] < half_section_size:
+                section_y_start = image.shape[1] - section_size
+                section_y_end = image.shape[1]
+            else:
+                section_y_start = cell["nucleus_y"] - half_section_size
+                section_y_end = cell["nucleus_y"] + half_section_size
             
             LOGGER.debug(
-                """Section is %s\n"""
+                """Section around classification is %s\n"""
                 """\ti_floor: %s\n"""
                 """\ti_ceil: %s\n"""
                 """\tj_floor: %s\n"""
                 """\tj_ceil: %s""",
                 classification,
-                i_floor,
-                i_ceil,
-                j_floor,
-                j_ceil
+                section_x_start,
+                section_x_end,
+                section_y_start,
+                section_y_end
             )
+
+            section = image[
+                section_x_start:section_x_end,
+                section_y_start:section_y_end
+            ]
 
             yield (
                 section,
                 classification
             )
-            
-            j = j + 1
-        j = 0
-        i = i + 1
-
-    # Sections around classified cells
-    half_section_size = int(section_size / 2)
-    for cell in classes:
-        if cell["bethesda_system"] == "Negative for intraepithelial lesion":
-            classification = "normal cell"
-        else:
-            classification = "altered cell"
-
-        if cell["nucleus_x"] < half_section_size:
-            section_x_start = 0
-            section_x_end = section_size
-        elif image.shape[0] - cell["nucleus_x"] < half_section_size:
-            section_x_start = image.shape[0] - section_size
-            section_x_end = image.shape[0]
-        else:
-            section_x_start = cell["nucleus_x"] - half_section_size
-            section_x_end = cell["nucleus_x"] + half_section_size
-        if cell["nucleus_y"] < half_section_size:
-            section_y_start = 0
-            section_y_end = section_size
-        elif image.shape[1] - cell["nucleus_y"] < half_section_size:
-            section_y_start = image.shape[1] - section_size
-            section_y_end = image.shape[1]
-        else:
-            section_y_start = cell["nucleus_y"] - half_section_size
-            section_y_end = cell["nucleus_y"] + half_section_size
-        
-        LOGGER.debug(
-            """Section around classification is %s\n"""
-            """\ti_floor: %s\n"""
-            """\ti_ceil: %s\n"""
-            """\tj_floor: %s\n"""
-            """\tj_ceil: %s""",
-            classification,
-            section_x_start,
-            section_x_end,
-            section_y_start,
-            section_y_end
-        )
-
-        section = image[
-            section_x_start:section_x_end,
-            section_y_start:section_y_end
-        ]
-
-        yield (
-            section,
-            classification
-        )
 
 def collection2sections_and_classes(
         data_filename,
         image_folder,
-        section_size=100):
+        section_size=100,
+        crop_grid=True,
+        crop_center=True):
     """Generate sections and classes for collection"""
     sections = []
     classifications = []
@@ -227,7 +236,9 @@ def collection2sections_and_classes(
         for section, classification in image2sections_and_classes(
                 image,
                 datum["classifications"],
-                section_size=section_size):
+                section_size=section_size,
+                crop_grid=crop_grid,
+                crop_center=crop_center):
             yield (
                 section,
                 classification
@@ -243,7 +254,9 @@ def collection2sections_and_classes(
 def collection2features_and_classes(
         data_filename,
         image_folder,
-        section_size=100):
+        section_size=100,
+        crop_grid=True,
+        crop_center=True):
     """Generate features and classes for collection"""
     features = []
     classifications = []
@@ -269,7 +282,9 @@ def collection2features_and_classes(
         for section, classification in image2sections_and_classes(
                 image,
                 datum["classifications"],
-                section_size=section_size):
+                section_size=section_size,
+                crop_grid=crop_grid,
+                crop_center=crop_center):
             features.append(
                 sample2features(section)
             )
