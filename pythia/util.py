@@ -117,10 +117,10 @@ def image2sections_and_classes(
                 ]
                 
                 for cell in classes:
-                    if (cell["nucleus_x"] > i_floor and
-                            cell["nucleus_x"] < i_ceil and
-                            cell["nucleus_y"] > j_floor and
-                            cell["nucleus_y"] < j_ceil):
+                    if (cell["nucleus_y"] > i_floor and
+                            cell["nucleus_y"] < i_ceil and
+                            cell["nucleus_x"] > j_floor and
+                            cell["nucleus_x"] < j_ceil):
                         LOGGER.debug(
                             "Cell %s",
                             cell
