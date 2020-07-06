@@ -18,5 +18,6 @@ setuptools.setup(
     scripts=[
         "bin/pythia",
         "bin/pythia2neptune",
+        "bin/pythia-gallery",
     ],
 )
