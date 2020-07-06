@@ -163,41 +163,47 @@ def image2sections_and_classes(
             else:
                 classification = "altered cell"
 
-            if cell["nucleus_x"] < half_section_size:
-                section_x_start = 0
-                section_x_end = section_size
-            elif image.shape[0] - cell["nucleus_x"] < half_section_size:
-                section_x_start = image.shape[0] - section_size
-                section_x_end = image.shape[0]
-            else:
-                section_x_start = cell["nucleus_x"] - half_section_size
-                section_x_end = cell["nucleus_x"] + half_section_size
             if cell["nucleus_y"] < half_section_size:
-                section_y_start = 0
-                section_y_end = section_size
-            elif image.shape[1] - cell["nucleus_y"] < half_section_size:
-                section_y_start = image.shape[1] - section_size
-                section_y_end = image.shape[1]
+                section_i_start = 0
+                section_i_end = section_size
+            elif image.shape[0] - cell["nucleus_y"] < half_section_size:
+                section_i_start = image.shape[0] - section_size
+                section_i_end = image.shape[0]
             else:
-                section_y_start = cell["nucleus_y"] - half_section_size
-                section_y_end = cell["nucleus_y"] + half_section_size
+                section_i_start = cell["nucleus_y"] - half_section_size
+                section_i_end = cell["nucleus_y"] + half_section_size
+            if cell["nucleus_x"] < half_section_size:
+                section_j_start = 0
+                section_j_end = section_size
+            elif image.shape[1] - cell["nucleus_x"] < half_section_size:
+                section_j_start = image.shape[1] - section_size
+                section_j_end = image.shape[1]
+            else:
+                section_j_start = cell["nucleus_x"] - half_section_size
+                section_j_end = cell["nucleus_x"] + half_section_size
             
             LOGGER.debug(
-                """Section around classification is %s\n"""
+                """Section around cell %s\n"""
+                """\tclassification: %s\n"""
                 """\ti_floor: %s\n"""
+                """\tnucleus_y: %s\n"""
                 """\ti_ceil: %s\n"""
                 """\tj_floor: %s\n"""
+                """\tnucleus_x: %s\n"""
                 """\tj_ceil: %s""",
+                cell["cell_id"],
                 classification,
-                section_x_start,
-                section_x_end,
-                section_y_start,
-                section_y_end
+                section_i_start,
+                cell["nucleus_y"],
+                section_i_end,
+                section_j_start,
+                cell["nucleus_x"],
+                section_j_end
             )
 
             section = image[
-                section_x_start:section_x_end,
-                section_y_start:section_y_end
+                section_i_start:section_i_end,
+                section_j_start:section_j_end
             ]
 
             yield (
