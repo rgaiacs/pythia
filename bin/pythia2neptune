@@ -84,7 +84,9 @@ if __name__ == '__main__':
         svc = svm.SVC(
             train_filename,
             args.image_folder,
-            args.section_size
+            args.section_size,
+            crop_grid=True,
+            crop_center=True
         )
         operation_time = time.time() - t0
         neptune.log_metric('Training time', operation_time)

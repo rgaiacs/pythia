@@ -21,9 +21,9 @@ class SVC():
         points, classification = util.collection2features_and_classes(
             data_filename,
             image_folder,
-            section_size=section_size,
-            crop_grid=True,
-            crop_center=True
+            section_size,
+            crop_grid,
+            crop_center
         )
         self.clf.fit(points, classification)
 

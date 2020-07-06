@@ -1,6 +1,7 @@
 """Utils"""
 import json
 import logging
+import os.path
 
 from sklearn.model_selection import KFold
 
@@ -76,7 +77,8 @@ def image2sections_and_classes(
         classes,
         section_size=100,
         crop_grid=True,
-        crop_center=True):
+        crop_center=True,
+        binary_classification=True):
     """Create sections of the image.
 
     Parameters
@@ -108,8 +110,11 @@ def image2sections_and_classes(
             while (j + 1) * section_size < image.shape[1]:
                 j_floor = j * section_size
                 j_ceil = (j + 1) * section_size
-                
-                classification = "normal cell"
+
+                if binary_classification:
+                    classification = "normal cell"
+                else:
+                    classification = "Negative for intraepithelial lesion"
                 
                 section = image[
                     i_floor:i_ceil,
@@ -126,11 +131,15 @@ def image2sections_and_classes(
                             cell
                         )
 
-                        if cell["bethesda_system"] == "Negative for intraepithelial lesion":
-                            classification = "normal cell"
+                        if binary_classification:
+                            if cell["bethesda_system"] == "Negative for intraepithelial lesion":
+                                classification = "normal cell"
+                            else:
+                                classification = "altered cell"
+                            break
                         else:
-                            classification = "altered cell"
-                        break
+                            classification = cell["bethesda_system"]
+                            break
                 
                 LOGGER.debug(
                     """Section is %s\n"""
@@ -158,10 +167,13 @@ def image2sections_and_classes(
         # Sections around classified cells
         half_section_size = int(section_size / 2)
         for cell in classes:
-            if cell["bethesda_system"] == "Negative for intraepithelial lesion":
-                classification = "normal cell"
+            if binary_classification:
+                if cell["bethesda_system"] == "Negative for intraepithelial lesion":
+                    classification = "normal cell"
+                else:
+                    classification = "altered cell"
             else:
-                classification = "altered cell"
+                classification = cell["bethesda_system"]
 
             if cell["nucleus_y"] < half_section_size:
                 section_i_start = 0
@@ -216,11 +228,9 @@ def collection2sections_and_classes(
         image_folder,
         section_size=100,
         crop_grid=True,
-        crop_center=True):
+        crop_center=True,
+        binary_classification=True):
     """Generate sections and classes for collection"""
-    sections = []
-    classifications = []
-    
     data = io.jsonread(
         data_filename
     )
@@ -233,7 +243,7 @@ def collection2sections_and_classes(
         )
 
         image = io.imread2gray(
-            "{}/{}".format(
+            os.path.join(
                 image_folder,
                 datum["image_name"]
             )
@@ -242,9 +252,10 @@ def collection2sections_and_classes(
         for section, classification in image2sections_and_classes(
                 image,
                 datum["classifications"],
-                section_size=section_size,
-                crop_grid=crop_grid,
-                crop_center=crop_center):
+                section_size,
+                crop_grid,
+                crop_center,
+                binary_classification):
             yield (
                 section,
                 classification
@@ -254,52 +265,29 @@ def collection2sections_and_classes(
             'Finished with image #%s!',
             datum["image_id"]
         )
-            
-    return (sections, classifications)
 
 def collection2features_and_classes(
         data_filename,
         image_folder,
         section_size=100,
         crop_grid=True,
-        crop_center=True):
+        crop_center=True,
+        binary_classification=True):
     """Generate features and classes for collection"""
     features = []
     classifications = []
 
-    data = io.jsonread(
-        data_filename
-    )
-    
-    for datum in data:
-        LOGGER.info(
-            'Processing image #%s ...\n\tFile name: %s',
-            datum["image_id"],
-            datum["image_name"]
+    for section, classification in collection2sections_and_classes(
+            data_filename,
+            image_folder,
+            section_size,
+            crop_grid,
+            crop_center,
+            binary_classification):
+        features.append(
+            sample2features(section)
         )
-        
-        image = io.imread2gray(
-            "{}/{}".format(
-                image_folder,
-                datum["image_name"]
-            )
-        )
-        
-        for section, classification in image2sections_and_classes(
-                image,
-                datum["classifications"],
-                section_size=section_size,
-                crop_grid=crop_grid,
-                crop_center=crop_center):
-            features.append(
-                sample2features(section)
-            )
-            classifications.append(classification)
-        
-        LOGGER.info(
-            'Finished with image #%s!',
-            datum["image_id"]
-        )
+        classifications.append(classification)
             
     return (features, classifications)
 
