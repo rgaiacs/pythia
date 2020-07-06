@@ -12,7 +12,12 @@ class SVC():
         section_size=100,
         crop_grid=True,
         crop_center=True):
-        self.clf = svm.SVC()
+        self.clf = svm.SVC(
+            kernel="poly",
+            degree=2,
+            class_weight="balanced",
+            max_iter=10_000
+        )
         points, classification = util.collection2features_and_classes(
             data_filename,
             image_folder,
