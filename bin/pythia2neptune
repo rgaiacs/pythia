@@ -67,10 +67,6 @@ if __name__ == '__main__':
         )
     )
 
-    neptune.create_experiment(
-        name=args.experiment
-    )
-
     TRAIN_TEST_FILENAMES = [
         (
             "train-1.json",
@@ -79,6 +75,17 @@ if __name__ == '__main__':
     ]
 
     for train_filename, test_filename in TRAIN_TEST_FILENAMES:
+        logger.info('New experiment\n\tUsing {} and {} ...'.format(
+            train_filename,
+            test_filename
+        ))
+        neptune.create_experiment(
+            name="{} for {}".format(
+                args.experiment,
+                train_filename
+            )
+        )
+
         logger.info('Fitting {} ...'.format(train_filename))
         t0 = time.time()
         svc = svm.SVC(
