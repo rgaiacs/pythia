@@ -6,12 +6,12 @@ from . import util
 class SVC():
     """Support Vector Classification"""
     def __init__(
-        self,
-        data_filename,
-        image_folder,
-        section_size=100,
-        crop_grid=True,
-        crop_center=True):
+            self,
+            data_filename,
+            image_folder,
+            section_size=100,
+            crop_grid=True,
+            crop_center=True):
         self.clf = svm.SVC(
             kernel="poly",
             degree=2,

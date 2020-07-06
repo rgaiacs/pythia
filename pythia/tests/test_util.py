@@ -22,14 +22,14 @@ class TestUtil(unittest.TestCase):
         
     def test_section_no_cell(self):
         self.assertEqual(
-            self.sections[0][1],
+            self.sections[0][1],  # pylint: disable=unsubscriptable-object
             "normal cell",
             "Section 0 is incorrected classify"
         )
     
     def test_section_lsil(self):
         self.assertEqual(
-            self.sections[1][1],
+            self.sections[1][1],  # pylint: disable=unsubscriptable-object
             "altered cell",
             "Section 1 is incorrected classify"
         )
