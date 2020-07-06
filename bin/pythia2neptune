@@ -186,7 +186,7 @@ if __name__ == '__main__':
 
         neptune.log_artifact(
             io.StringIO(df.to_csv()),
-            "prediction_log"
+            "prediction_log.csv"
         )
 
     neptune.stop()
