@@ -60,16 +60,16 @@ def image2sections(image, section_size=100):
     # +---+---+---+
     # | 7 | 8 | 9 |
     # +---+---+---+
-    while (j + 1) * section_size < image.shape[0]:
-        while (i + 1) * section_size < image.shape[1]:
+    while (i + 1) * section_size < image.shape[0]:
+        while (j + 1) * section_size < image.shape[1]:
             yield image[
-                j * section_size:(j + 1) * section_size,
-                i * section_size:(i + 1) * section_size
+                i * section_size:(i + 1) * section_size,
+                j * section_size:(j + 1) * section_size
             ]
 
-            i = i + 1
-        i = 0
-        j = j + 1
+            j = j + 1
+        j = 0
+        i = i + 1
 
 def image2sections_and_classes(
         image,
